@@ -128,3 +128,34 @@ class AllTasksViewTest(TestCase):
                                                    OrderedDict([('id', 2),
                                                                 ('description', 'description 2'),
                                                                 ('due', str(self.timestamp + timedelta(days=2)))])]})
+
+
+class DueTodayTest(TestCase):
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='test',
+                                                         password='12test12',
+                                                         email='test@example.com')
+        self.user.save()
+        self.timestamp = date.today()
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_due_today(self):
+        self.task = Task(user=self.user,
+                         description='description',
+                         due=self.timestamp + timedelta(days=0))
+        self.assertTrue(self.task.due_today())
+
+    def test_due_future(self):
+        self.task = Task(user=self.user,
+                         description='description',
+                         due=self.timestamp + timedelta(days=10))
+        self.assertFalse(self.task.due_today())
+
+    def test_due_past(self):
+        self.task = Task(user=self.user,
+                         description='description',
+                         due=self.timestamp + timedelta(days=-10))
+        self.assertFalse(self.task.due_today())
